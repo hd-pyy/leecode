@@ -57,7 +57,7 @@ public class BiLinkedList implements Iterable<Integer> {
     /**
      * 初始化
      */
-    BiLinkedList() {
+    public BiLinkedList() {
         head = new Node(null, 0, null);
         tail = new Node(null, 1, null);
         head.next = tail;

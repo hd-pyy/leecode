@@ -1,9 +1,9 @@
-package t3_LinkedList.DoublyLinkedListSentinel;
+package src.t3_LinkedList.DoublyLinkedListSentinel;
 
 public class test {
     public static void main(String[] args) {
 
-        DoublyLinkedListSentinel doublyLinkedListSentinel = new DoublyLinkedListSentinel();
+        t3_LinkedList.DoublyLinkedListSentinel.DoublyLinkedListSentinel doublyLinkedListSentinel = new t3_LinkedList.DoublyLinkedListSentinel.DoublyLinkedListSentinel();
         doublyLinkedListSentinel.addFirst(13);
         doublyLinkedListSentinel.addFirst(14);
         doublyLinkedListSentinel.addFirst(15);
