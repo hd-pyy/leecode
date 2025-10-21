@@ -50,3 +50,50 @@
         array[parent] = t;
 
     }
+
+## 2、上浮
+    核心：从下倒上 找到被插入元素所在位置
+### 1、先往堆底添加元素
+    a、 offered > arr[p]
+            1、到了堆顶停止
+            2、offered < arr[p]
+### 代码实现
+    // 在底部添加一个元素
+    // 将 offered元素上浮 带扩容
+    public boolean offer(int offered) {
+        if (size == arr.length) {
+    //            size++;
+    arr = Arrays.copyOf(arr, arr.length + 1);
+    //            offer(offered);
+    }
+    up(offered);
+    // 上浮成功
+    size++;
+    return true;
+    }
+
+    // 上浮
+    public void up(int offered) {
+        // child指针 一直上浮 当指针为零时 到达堆顶
+        int child = size;
+        while (child > 0) {
+            int parent = (child - 1) / 2;
+            // 当offered大于父元素 则交换
+            if (offered > arr[parent]) {
+                // 把父元素所在位置腾出来
+                arr[child] = arr[parent];
+
+            } else break;
+            // 移动child指针到parent
+            child = parent;
+        }
+        // 给child元素赋值
+        arr[child] = offered;
+    }
+
+## 3、堆排序算法
+    核心：最大堆最大堆 堆顶就是最大值 把最大值依次取出即可
+    实现：1、先取出堆顶值
+        2、将堆顶与堆底进行交换
+        3、将堆大小减一
+        循环 直至 size == 0;

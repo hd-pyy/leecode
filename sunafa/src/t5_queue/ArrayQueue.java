@@ -1,4 +1,6 @@
-package src.t5_queue;
+package t5_queue;
+
+
 
 import org.jetbrains.annotations.NotNull;
 
