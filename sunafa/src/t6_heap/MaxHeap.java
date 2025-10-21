@@ -6,7 +6,7 @@ import java.util.Arrays;
  * 大顶堆
  */
 public class MaxHeap {
-    int[] array;
+    public int[] array;
     int size;
 
     public MaxHeap(int cap) {
@@ -108,13 +108,13 @@ public class MaxHeap {
     
 
     public static void main(String[] args) {
-        int[] arr = {1,2,5,7,4,8};
+        int[] arr = {1,2,3,4,5,7};
         MaxHeap maxHeap = new MaxHeap(arr);
         System.out.println(Arrays.toString(maxHeap.array));
-        int peek = maxHeap.peek();
-        System.out.println(peek);
-        int poll = maxHeap.poll();
-        System.out.println(poll);
-        System.out.println(Arrays.toString(maxHeap.array));
+//        int peek = maxHeap.peek();
+//        System.out.println(peek);
+//        int poll = maxHeap.poll();
+//        System.out.println(poll);
+//        System.out.println(Arrays.toString(maxHeap.array));
     }
 }
