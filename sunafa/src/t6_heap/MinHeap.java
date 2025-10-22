@@ -28,6 +28,11 @@ public class MinHeap {
         }
     }
 
+    // 判断是否为空
+    public boolean isFull(){
+        return size == array.length;
+    }
+
     /**
      * 上浮操作
      * @param offered 要插入的值
