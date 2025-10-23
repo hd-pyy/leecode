@@ -141,7 +141,43 @@ public class TreeTraversal {
         System.out.println(postorder);
     }
 
+    // 完整的绕树一周
+    private static void TreeBianLi0(TreeNode root){
+        LinkedList<TreeNode> stack = new LinkedList<>();
+        TreeNode cur = root;// 代表当前节点
+        TreeNode pop = null;// 代表最近一次被弹出栈的节点
 
+
+        while (!stack.isEmpty() || cur != null){
+            if (cur != null){
+                stack.push(cur);// 入栈
+                // 待处理左子树
+                cur = cur.left;
+
+            }
+            // 左子树入栈完成
+            else {
+                // 栈顶
+                TreeNode peek = stack.peek();
+
+                // 没有柚子树
+                if (peek.right == null){
+                    // 直接出栈
+                    pop = stack.pop();
+                }
+                // 此时 柚子树处理完成
+                else if (peek.right == pop){
+                    pop = stack.pop();
+                }
+                // 以上都不满足 说明需要处理柚子树
+                else {
+                    cur = peek.right;
+                }
+
+            }
+        }
+
+    }
     // 前序遍历
     public static void preOrder(TreeNode node) {
         if (node == null) {
