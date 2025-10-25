@@ -232,12 +232,75 @@ public class BSTTree1 {
             }
             // 只有不相邻才需要托孤 而托孤之后 想不想理你的操作都一样的
             // 3.3 不相邻 ：此时将后继节点吐托孤给删除节点的父节点
-            shift(parent,p,s);
+            shift(parent, p, s);
             // 此时还要将被删除节点的两个孩子托孤给顶上来的后继节点
             s.left = p.left;
 
         }
         return null;
+    }
+
+
+    //
+
+    /**
+     * 递归删除
+     *
+     * @param node 被删除节点
+     * @param key
+     * @return 被删除的节点的孩子
+     */
+    private BSTNode doDelete(BSTNode node, int key) {
+        if (node == null) {
+            return null;
+        }
+        // 向左找
+        if (key < node.key) {
+            // 将执行删除操作后的返回值更新给被删除节点的父节点的孩子
+            node.left = doDelete(node.left, key);
+            return node;
+
+        }
+        // 向右找
+        if (key > node.key) {
+            node.right = doDelete(node.right, key);
+            return node;
+        }
+
+        // 以上都是没找到进行递归操作
+        // 找到了
+        // 三种情况
+        // 1、没有左孩子
+        if (node.left == null) {
+            return node.right;
+        }
+
+        // 2、没有右孩子
+        if (node.right == null) {
+            return node.left;
+        }
+
+        // 3、孩子都有 找后继节点 把后继节点换掉被删除节点 再建立后继节点与被删除节点的父子节点的关系 在递归里面 后继节点就是删剩下的 返回后继节点就行
+        // 此时操作就变成了找后继节点
+        // 从当前节点的柚子树里面找一个最小的节点 就是后继节点
+        // 下面这段代码 只考虑了被删除节点与后继节点相邻情况
+        // 1、相邻
+        BSTNode s = node.right;
+        while (s.left != null) {
+            s = s.left;
+        }
+        // 2、不相邻 还得处理被删除节点的孩子
+        // 此时 把后继节点当成被删除节点 递归起点是被删除节点的柚子节点
+        // 删剩下的最后返回的就是被处理后的被删除节点的柚子树 将来这个柚子树要作为后继节点的柚子树
+        s.right = doDelete(node.right, s.key);
+
+        // 先删除 再把后继节点的左孩子赋值
+        s.left = node.left;
+
+
+        return s;
+
+
     }
 
     /**
