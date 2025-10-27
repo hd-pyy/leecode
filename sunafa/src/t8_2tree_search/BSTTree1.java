@@ -1,5 +1,7 @@
 package t8_2tree_search;
 
+import java.util.Arrays;
+
 public class BSTTree1 {
     // 跟节点
     BSTNode root;
@@ -370,7 +372,6 @@ public class BSTTree1 {
 
     public static void main(String[] args) {
 
-
         BSTNode n1 = new BSTNode(1, "a");
         BSTNode n3 = new BSTNode(3, "c");
         BSTNode n2 = new BSTNode(2, "b", n1, n3);
@@ -398,5 +399,6 @@ public class BSTTree1 {
 
 
     }
+
 
 }
