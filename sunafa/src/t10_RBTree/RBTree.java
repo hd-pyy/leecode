@@ -262,12 +262,18 @@ public class RBTree {
     private void doRemove(Node del) {
         Node s = findReplace(del);// rep
         Node parent = del.parent;
-        // 表示没有孩子
+        // 删剩下的s为空 表示没有孩子
         if (s == null) {
             // case 1 ：删除的是根节点
             if (del == root) {
                 root = null;
             } else {
+                if (isBlack(del)) {
+                    // 复杂调整 删除是黑 剩下也是黑 Nil 也是黑
+                    fixDoubleBlack(del);
+                } else {
+                    // 红色叶子节点 无需处理
+                }
                 // case 2.1 删除的不是根节点 而且没有孩子
                 // 判断被删除节点是父亲节点的左/右孩子 将 父亲节点的 左/右孩子 值为空
                 if (del.isLC()) {
@@ -301,7 +307,15 @@ public class RBTree {
                 del.parent = null;
                 del.right = null;
                 del.left = null;
+                if (isBlack(del) && isBlack(s)) {
+                    // 被删除的和删剩下的都是黑
+                    // 复杂处理
+                    fixDoubleBlack(s);
 
+                } else {
+                    // case 2 删的是黑 剩的是红 改变剩下节点的颜色
+                    s.color = Color.BLACK;
+                }
             }
 
             return;
@@ -365,5 +379,96 @@ public class RBTree {
         }
         // 此时找到后继节点
         return s;
+    }
+
+
+    // 处理双黑 case 3 4 5
+    // x 代表待调整节点 可能是被删除节点 也可能是删剩节点
+    private void fixDoubleBlack(Node x) {
+        // 出口
+        if (x == root) {
+            return;
+        }
+        Node parent = x.parent;
+        Node bro = x.bro();
+
+        // case 3 兄弟为红
+        if (isRed(bro)) {
+            // case 3 兄弟为红
+            // case 3.1 旋转
+            // case 3.1 x 为左孩子 parent 左旋
+            if (x.isLC()) {
+                leftRotate(parent);
+            } else {
+                // case 3.2 x 为右孩子 parent 右旋
+                rightRotate(parent);
+            }
+
+            // case 3.2 换色 父亲一定原始黑色 因为兄弟为红色 现在父亲变为红色 而兄弟变为黑丝
+            parent.color = Color.RED;
+            bro.color = Color.BLACK;
+            // 调整之后 新的兄弟 也就是 原来的侄子符合为黑色情况
+            // 现在进行递归调用 其实 再次进入递归时 是进入case 4 5
+            fixDoubleBlack(x);
+            return;
+        }
+
+        // case 4 兄弟为黑 两个侄子也为黑
+        if (bro != null) {
+            if (isBlack(bro.left) && isBlack(bro.right)) {
+                bro.color = Color.RED;
+                // case 4.1 父亲为红 直接给父亲变色就行
+                if (isRed(parent)) {
+                    parent.color = Color.BLACK;
+                } else {
+                    // case 4.2 父亲为黑  整个路径少了黑 需要递归处理整个路径 增加红色节点 递归时会一直修改bro 直至平衡
+                    fixDoubleBlack(parent);
+                }
+            }
+            // case 5 兄弟为黑 侄子有红色
+            else {
+                // case 5.1 LL  bro = parent.left b.child = bro.left
+                if (bro.isLC() && isRed(bro.left)) {
+                    rightRotate(parent);
+                    parent.color = Color.BLACK;
+                    bro.color = Color.RED;
+                    bro.left.color = Color.BLACK;
+                }
+
+                // case 5.2 LR isRed(bro.right) 这段代码，里面判断了当前节点是否为空
+                // 此时父节点随便什么颜色 但是最后旋转得到的父节点位置的新节点颜色 必须和原来位置相同
+                else if (bro.isLC() && isRed(bro.right)) {
+                    bro.right.color = parent.color;
+                    leftRotate(bro); // 旋转之后 bro的孩子会发生变化 所以对有孩子的变色应该发生在旋转之前
+                    rightRotate(parent);
+                    parent.color = Color.BLACK;
+
+                }
+
+                // case 5.3 RR
+                else if (!bro.isLC() && isRed(bro.right)){
+                    leftRotate(parent);
+                    bro.color = parent.color;
+                    parent.color = Color.BLACK;
+                    bro.right.color = Color.BLACK;
+//                    bro.color = parent.color;
+//                    parent.color = Color.BLACK;
+//                    bro.right.color = Color.BLACK;
+                }
+                // case 5.4 RL bro = parent.right bL = bro.left;
+                else if (!bro.isLC() && isRed(bro.left)){
+                    // 由于bro右旋之后 孩子变了 所以先给 bL 变色
+                    bro.left.color = parent.color;
+                    // bro 右旋
+                    rightRotate(bro);
+                    // parent 左旋
+                    leftRotate(parent);
+                    parent.color = Color.BLACK;
+                }
+            }
+        } else {
+            fixDoubleBlack(parent);
+        }
+
     }
 }
