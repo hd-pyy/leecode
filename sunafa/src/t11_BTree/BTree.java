@@ -51,11 +51,6 @@ public class BTree {
 
         // 向keys指定索引index处插入 key
         public void insertKey(int key, int index) {
-//            // 从后往前 移动元素 在索引index处留出一个空位
-//            for (int i = keyNum - 1; i >= index; i--) {
-//                keys[i + 1] = keys[i];
-//            }
-            // 或者直接拷贝后半个数组数组
             System.arraycopy(keys, index, keys, index + 1, keyNum - index);
             keys[index] = key;
             keyNum++;
@@ -63,10 +58,6 @@ public class BTree {
 
         // 向 children 指定索引 index 插入 child
         public void insertChild(Node child, int index) {
-            // 从后往前 移动元素
-//            for (int i = keyNum; i >= index; i--) {
-//                children[i + 1] = children[i];
-//            }
             System.arraycopy(children, index, children, index + 1, keyNum - index);
             children[index] = child;
         }
@@ -129,19 +120,19 @@ public class BTree {
 
     // 插入
     public void put(int key) {
-        doPut(root, key);
-        // 如果根节点已满，需要分裂
-        if (root.isFull()) {
-            Node newRoot = new Node(t);
-            newRoot.leaf = false;
-            newRoot.insertChild(root, 0);
-//            split(newRoot, 0);
-            root = newRoot;
-        }
+        doPut(root, key, null, 0);
     }
 
-    private void doPut(Node node, int key) {
+    /**
+     *
+     * @param node   被插入节点
+     * @param key    插入的key
+     * @param parent 父节点
+     * @param index  当前节点为父节点的第几个孩子
+     */
+    private void doPut(Node node, int key, Node parent, int index) {
         int i = 0;
+
         // 找到插入位置
         while (i < node.keyNum) {
             if (node.keys[i] == key) {
@@ -158,65 +149,63 @@ public class BTree {
             node.insertKey(key, i);
         } else {
             // 非叶子节点，递归插入到子节点
-//            Node child = node.children[i];
-//            if (child.isFull()) {
-//                // 子节点已满，需要分裂
-//                split(node, i);
-//                // 分裂后需要重新确定插入位置
-//                if (key > node.keys[i]) {
-//                    i++;
-//                }
-//            }
-            doPut(node.children[i], key);
+            Node child = node.children[i];
+            // 递归调用时，当前节点成为父节点，i是子节点索引
+            doPut(child, key, node, i);
+        }
+
+        // 插入操作之后，检查当前节点是否满了
+        if (node.isFull()) {
+            split(node, parent, index);
         }
     }
 
     // 分裂节点
-
     /**
      *
-     * @param left 被分裂节点
+     * @param left   被分裂节点
      * @param parent 被分裂节点的父节点
-     * @param index
+     * @param index  被分裂节点在父节点中的索引
      */
     private void split(Node left, Node parent, int index) {
-        if(parent == null) { // 分裂的是根节点
+        System.out.println("执行分裂: left=" + left + ", parent=" + parent + ", index=" + index);
+
+        if (parent == null) { // 分裂的是根节点
             Node newRoot = new Node(t);
             newRoot.leaf = false;// 不是叶子节点
             newRoot.insertChild(left, 0);// 新的根节点代替旧的
             this.root = newRoot;
             parent = newRoot;
+            index = 0; // 根节点在父节点中的索引为0
         }
+
         Node right = new Node(t);
         // right 是否是叶子节点 跟 left 相同 他俩在同一层
         right.leaf = left.leaf;
 
         // 开始分裂
         // 1、left 中一部分 key 移动到 right
-        /**
-         *        // 将左节点的后半部分关键字移动到右节点
-         *         // 源数组: left.keys - 左节点的关键字数组
-         *         // 源起始位置: t - 从左节点的第t个关键字开始拷贝（索引从0开始）
-         *         // 目标数组: right.keys - 右节点的关键字数组
-         *         // 目标起始位置: 0 - 拷贝到右节点的开头位置
-         *         // 拷贝长度: t-1 - 拷贝t-1个关键字（左节点总共2t-1个关键字，保留前t-1个，移动后t-1个）
-         */
-        System.arraycopy(left.keys, t , right.keys,0,t-1);
+        // 拷贝从索引t开始的后t-1个key到right节点
+        System.arraycopy(left.keys, t, right.keys, 0, t - 1);
+        right.keyNum = t - 1;
 
-        // 不是叶子结点
-       if (left.leaf){
-           System.arraycopy(left.children, t, right.children,0,t-1);
-       }
-        right.keyNum = t-1;// 有效关键字数目 拷贝了 t-1 所以有效也是这么多
-        left.keyNum = t-1;// 有效关键字数目 拷贝了 t-1 所以有效也是这么多
+        // 2、如果不是叶子节点，拷贝children
+        if (!left.leaf) {
+            // 拷贝从索引t开始的t个children到right节点
+            System.arraycopy(left.children, t, right.children, 0, t);
+        }
 
-        // 2、拿到中间的 key 拷贝到父节点
+        // 3、左节点保留前t-1个key
+        left.keyNum = t - 1;
+
+        // 4、拿到中间的 key 拷贝到父节点
         int mid = left.keys[t - 1];
-        parent.insertKey(mid,index);
+        parent.insertKey(mid, index);
 
-        // 3、right 节点作为parent的孩子 插入到 index+1 处
-        parent.insertChild(right,index+1);
+        // 5、right 节点作为parent的孩子 插入到 index+1 处
+        parent.insertChild(right, index + 1);
 
+        System.out.println("分裂完成: 中间key=" + mid + ", 左节点=" + left + ", 右节点=" + right + ", 父节点=" + parent);
     }
 
     // 删除
@@ -371,27 +360,36 @@ public class BTree {
 
     // 打印B树
     public void print() {
+        System.out.println("=== B树结构 ===");
         print(root, 0);
+        System.out.println("===============");
     }
 
     private void print(Node node, int level) {
-        System.out.println("Level " + level + ": " + node);
+        StringBuilder indent = new StringBuilder();
+        for (int i = 0; i < level; i++) {
+            indent.append("  ");
+        }
+        System.out.println(indent + "Level " + level + ": " + node + (node.leaf ? " [叶子]" : " [内部]"));
         if (!node.leaf) {
             for (int i = 0; i <= node.keyNum; i++) {
-                print(node.children[i], level + 1);
+                if (node.children[i] != null) {
+                    print(node.children[i], level + 1);
+                }
             }
         }
     }
 
     public static void main(String[] args) {
         BTree tree = new BTree();
-        BTree.Node root = tree.root;
 
+        System.out.println("测试B树分裂功能:");
 
-        root.leaf = false;
-        root.keys[0] = 5;
-        root.keyNum = 1;
-
-
+        // 测试分裂：依次插入1-6，观察分裂过程
+        for (int i = 1; i <= 6; i++) {
+            System.out.println("\n插入 " + i + ":");
+            tree.put(i);
+            tree.print();
+        }
     }
 }
