@@ -180,6 +180,13 @@ public class BTree {
      * @param index
      */
     private void split(Node left, Node parent, int index) {
+        if(parent == null) { // 分裂的是根节点
+            Node newRoot = new Node(t);
+            newRoot.leaf = false;// 不是叶子节点
+            newRoot.insertChild(left, 0);// 新的根节点代替旧的
+            this.root = newRoot;
+            parent = newRoot;
+        }
         Node right = new Node(t);
         // right 是否是叶子节点 跟 left 相同 他俩在同一层
         right.leaf = left.leaf;
@@ -195,6 +202,11 @@ public class BTree {
          *         // 拷贝长度: t-1 - 拷贝t-1个关键字（左节点总共2t-1个关键字，保留前t-1个，移动后t-1个）
          */
         System.arraycopy(left.keys, t , right.keys,0,t-1);
+
+        // 不是叶子结点
+       if (left.leaf){
+           System.arraycopy(left.children, t, right.children,0,t-1);
+       }
         right.keyNum = t-1;// 有效关键字数目 拷贝了 t-1 所以有效也是这么多
         left.keyNum = t-1;// 有效关键字数目 拷贝了 t-1 所以有效也是这么多
 
@@ -369,5 +381,17 @@ public class BTree {
                 print(node.children[i], level + 1);
             }
         }
+    }
+
+    public static void main(String[] args) {
+        BTree tree = new BTree();
+        BTree.Node root = tree.root;
+
+
+        root.leaf = false;
+        root.keys[0] = 5;
+        root.keyNum = 1;
+
+
     }
 }
